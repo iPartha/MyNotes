@@ -44,7 +44,7 @@ export default class Item extends Component {
         useNativeDriver: true
       }
     ).start(() => {
-      this.props.removeItem(this.props.item.id);
+      this.props.removeItem(this.props.key);
     });
   }
 

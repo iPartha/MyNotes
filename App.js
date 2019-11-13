@@ -1,129 +1,130 @@
 import React, { Component } from 'react';
-import { AppRegistry,TouchableOpacity, View, StyleSheet, ScrollView, Image, LayoutAnimation, } from 'react-native';
+import { AppRegistry,TouchableOpacity, View, StyleSheet, ScrollView, Image, LayoutAnimation, Button, FlatList} from 'react-native';
 import Item from './src/components/Item.js'
+import ListItem from './src/components/ListItem.js'
 import { TextInput } from 'react-native'
+import { connect } from 'react-redux';
+import * as notesAction from './src/actions/notesAction';
 
-export default class App extends Component {
+class App extends Component {
 
-  constructor() {
-    super();
-    this.state = { 
-      valueArray: [], 
-      disabled: false,
-      notesInput:'',
-      notesAdd : false
+  constructor( props ){
+    super( props );
+    console.log(props)
+    this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+    this.state = {
+      notes: '',
+      key: '',
+      notesList: []
     }
-    this.addNewEle = false;
-    this.index = 0;
   }
+
+
 
   afterAnimationComplete = () => {
     this.index += 1;
     this.setState({ disabled: false });
   }
 
-  addNotes = (event) => {
-    event.preventDefault()
+  
+handleChange = (value) => {
+  this.setState({
+    notes: value
+  });    
+}
 
-    this.addNewEle = true;
-    const newlyAddedValue = { id: "id_" + this.index, text: this.state.notesInput };
-
-    let newNote = [...this.state.valueArray, newlyAddedValue]
-
-    this.setState({
-      //disabled: true,
-      notesAdd : false,
-      notesInput: '',
-      valueArray: newNote
-    });
+  handleSubmit(e){
+    console.log(this.state.notes)
+    this.props.add(this.state.notes);
   }
 
-  handleNotesUpdate=(event)=>{
-    this.setState(()=>({notesInput:event}))
-  }
 
-  removeNotes(id) {
-    this.addNewEle = false;
-    const newArray = [...this.state.valueArray];
-    newArray.splice(newArray.findIndex(ele => ele.id === id), 1);
-
-    this.setState(() => {
-      return {
-        valueArray: newArray
-      }
-    }, () => {
-      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    });
+  removeNotes(key) {
+    console.log('killl000000', key)
+    this.props.remove(key);
   }
   
-  render() {
-    return (
-      <View style={styles.container} >
-        <ScrollView
-          ref={scrollView => this.scrollView = scrollView}
-          onContentSizeChange={() => {
-            this.addNewEle && this.scrollView.scrollToEnd();
-          }}
-        >
-          <View style={{ flex: 1, padding: 4 }}>
-            {this.state.valueArray.map(ele => {
-              return (
-                <Item
-                  key={ele.id}
-                  item={ele}
-                  removeItem={(id) => this.removeNotes(id)}
-                  afterAnimationComplete={this.afterAnimationComplete}
-                />
-              )
-            })}
-          </View>
-        </ScrollView>
+  placesOutput = () => {
+   return (
+    <FlatList style = { styles.listContainer }
+      data = { this.props.notesList }
+      keyExtractor={(item, index) => index.toString()}
+      renderItem = { info => (
+        <ListItem 
+          item={ info.item }
+          removeNotes={(key) => this.removeNotes(key)}
+        />
+      )}
+    />
+  )
+}
 
-        <TouchableOpacity
-          activeOpacity={0.8}
-          style={styles.addBtn}
-          disabled={this.state.disabled}
-          onPress={()=>{this.setState({notesAdd: !this.state.notesAdd})}}>
 
-          <Image source={require('./images/add.png')} style={styles.btnImage} />
-        </TouchableOpacity>
-        {this.state.notesAdd ? <TextInput style={styles.editTextStyle}
-          onSubmitEditing={
-            this.addNotes
-          }
-          onChangeText={text => this.handleNotesUpdate(text)}
-          value={this.state.notesInput}
-          /> : null}
 
+
+
+render() {
+  return (
+    <View style={ styles.container }>
+      <View style = { styles.inputContainer }>
+        <TextInput
+          placeholder = "Enter notes"
+          style = { styles.placeInput }
+          value = { this.state.notes }
+          onChangeText = { this.handleChange }
+        ></TextInput>
+        <Button title = 'Add' 
+          style = { styles.placeButton }
+          onPress = { this.handleSubmit }
+        />
+        </View>
+        <View style = { styles.listContainer }>
+          { this.placesOutput() }
+        </View>
       </View>
     );
   }
 }
 
-const styles = StyleSheet.create(
-  {
-    container: {
-      flex: 1,
-    },
-    addBtn: {
-      position: 'absolute',
-      right: 25,
-      bottom: 25,
-      width: 70,
-      height: 70,
-      justifyContent: 'center',
-      alignItems: 'center',
-      borderRadius: 30,
-      backgroundColor: 'white'
-    },
-    btnImage: {
-      resizeMode: 'contain',
-      width: '100%',
+const styles = StyleSheet.create({
+  container: {
+    paddingTop: 30,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%'
+  },
+  placeInput: {
+    width: '70%'
+  },
+  placeButton: {
+    width: '30%'
+  },
+  listContainer: {
+    width: '100%'
+  }
+});
 
-    },
-     editTextStyle: {
-      borderColor: 'red',
-      borderTopWidth: 1,
+const mapStateToProps = state => {
+  return {
+    notesList: state.notesList.notesList
+  }
+}
 
+const mapDispatchToProps = dispatch => {
+  return {
+    add: (notes) => {
+      dispatch(notesAction.addNotes(notes))
     },
-  });
+    remove: (key) => {
+      dispatch(notesAction.removeNotes(key))
+    }
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(App)
