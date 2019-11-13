@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { AppRegistry,TouchableOpacity, View, StyleSheet, ScrollView, Image, LayoutAnimation, Button, FlatList} from 'react-native';
-import Item from './src/components/Item.js'
 import ListItem from './src/components/ListItem.js'
 import { TextInput } from 'react-native'
 import { connect } from 'react-redux';
@@ -20,14 +19,6 @@ class App extends Component {
     }
   }
 
-
-
-  afterAnimationComplete = () => {
-    this.index += 1;
-    this.setState({ disabled: false });
-  }
-
-  
 handleChange = (value) => {
   this.setState({
     notes: value
@@ -45,7 +36,7 @@ handleChange = (value) => {
     this.props.remove(key);
   }
   
-  placesOutput = () => {
+  listNotes = () => {
    return (
     <FlatList style = { styles.listContainer }
       data = { this.props.notesList }
@@ -70,17 +61,17 @@ render() {
       <View style = { styles.inputContainer }>
         <TextInput
           placeholder = "Enter notes"
-          style = { styles.placeInput }
+          style = { styles.notesInput }
           value = { this.state.notes }
           onChangeText = { this.handleChange }
         ></TextInput>
         <Button title = 'Add' 
-          style = { styles.placeButton }
+          style = { styles.addButton }
           onPress = { this.handleSubmit }
         />
         </View>
         <View style = { styles.listContainer }>
-          { this.placesOutput() }
+          { this.listNotes() }
         </View>
       </View>
     );
@@ -99,10 +90,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%'
   },
-  placeInput: {
+  notesInput: {
     width: '70%'
   },
-  placeButton: {
+  addButton: {
     width: '30%'
   },
   listContainer: {
